@@ -156,7 +156,7 @@ class GuiModule extends Module {
           if (_pageGens.length == 1) return _pageGens.first;
 
           final score = Score(
-            Entity.Player(distance: Range.to(8)),
+            Entity.Player(distance: Range(to: 8)),
             pageScore,
           );
           return For.of(
@@ -196,7 +196,7 @@ class GuiModule extends Module {
               if (_pageGens.length == 1) return For.of(_pageGens.first.clear());
 
               final score = Score(
-                Entity.Player(distance: Range.to(8)),
+                Entity.Player(distance: Range(to: 8)),
                 pageScore,
               );
               return For.of(

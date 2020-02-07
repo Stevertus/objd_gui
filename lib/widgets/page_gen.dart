@@ -71,7 +71,7 @@ class PageGenerator extends Widget {
         newSlot = Interactive(item);
       }
       if (slot is ChangePage) {
-        final s = Score(Entity.Player(distance: Range.to(8)), pageScore);
+        final s = Score(Entity.Player(distance: Range(to: 8)), pageScore);
 
         final actions = <Widget>[File.execute('gui/clear', create: false)];
 
@@ -212,7 +212,7 @@ class PageGenerator extends Widget {
     List<Widget> reset() {
       return [
         Clear(
-          Entity.All(distance: Range.to(20)),
+          Entity.All(distance: Range(to: 20)),
           Item('#${context.packId}:all', nbt: {
             'objd': {'gui': true}
           }),
@@ -236,7 +236,7 @@ class PageGenerator extends Widget {
             tags: ['objd_gui_dropitem'],
           ),
           to: Entity.Player(
-            distance: Range.to(8),
+            distance: Range(to: 8),
           ),
         ),
         File.execute(
@@ -246,7 +246,7 @@ class PageGenerator extends Widget {
       ];
     }
 
-    final s = Score(Entity.Player(distance: Range.to(8)), countScore);
+    final s = Score(Entity.Player(distance: Range(to: 8)), countScore);
     var children = <Widget>[
       //s.setToCondition(cond)
       If(Condition.not(s & _slots.length), then: [
@@ -328,7 +328,7 @@ Slot _getSlotForContainer(GuiContainer container, int s) {
         return Slot.chest(s);
       }
     case GuiContainer.enderchest:
-      return Slot.chest(s, null, true);
+      return Slot.chest(s, null); //, true);
   }
   throw (UnsupportedError('$container is not supported'));
 }
