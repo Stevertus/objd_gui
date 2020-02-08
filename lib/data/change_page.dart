@@ -26,7 +26,7 @@ class ChangePage extends GuiSlot {
     Item item, {
     Slot slot,
   }) =>
-      ChangePage(1, item, slot: slot, mode: ChangePageMode.prev);
+      ChangePage(-1, item, slot: slot, mode: ChangePageMode.prev);
 
   @override
   ChangePage applyWhenPossible({Slot slot, ChangePageMode mode}) => ChangePage(

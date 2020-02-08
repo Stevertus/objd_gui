@@ -8,19 +8,26 @@ import 'package:objd_gui/gui.dart';
 
 class PageGenerator extends Widget {
   int index;
+  int totalPages;
+  int fillMax;
   GuiPage page;
   GuiContainer container;
   List<Interactive> _slots;
   String countScore;
   String pageScore;
+  Item placeholder;
 
   PageGenerator(
     this.page,
     this.container,
     this.countScore,
-    this.pageScore, [
+    this.fillMax,
+    this.pageScore,
+    Item placeholder, [
     this.index,
+    this.totalPages,
   ]) {
+    this.placeholder = page.placeholder ?? placeholder;
     _slots = _getGenSlots();
   }
 
@@ -63,7 +70,7 @@ class PageGenerator extends Widget {
       }
 
       if (slot is Placeholder) {
-        final item = slot.item ?? page.placeholder;
+        final item = slot.item ?? placeholder;
         assert(
           item != null,
           'Please provide either an item for each placeholder or give a global placeholder!',
@@ -73,16 +80,23 @@ class PageGenerator extends Widget {
       if (slot is ChangePage) {
         final s = Score(Entity.Player(distance: Range(to: 8)), pageScore);
 
-        final actions = <Widget>[File.execute('gui/clear', create: false)];
+        final actions = <Widget>[];
 
         if (slot.mode == ChangePageMode.exact) {
           actions.add(s >> slot.page);
         }
-        if (slot.mode == ChangePageMode.next) {
+        if (slot.mode == ChangePageMode.next && index < totalPages) {
           actions.add(s + slot.page);
         }
-        if (slot.mode == ChangePageMode.prev) {
-          actions.add(s - slot.page);
+        if (slot.mode == ChangePageMode.prev && index > 1) {
+          actions.add(s - (-slot.page));
+        }
+
+        if (slot.mode == ChangePageMode.prev && index <= 1 ||
+            slot.mode == ChangePageMode.next && index >= totalPages) {
+          print(
+            'WARNING! You tried to navigate to a page(${index + slot.page}) that is not in the stack.',
+          );
         }
 
         newSlot = Interactive(slot.item, actions: actions);
@@ -100,19 +114,23 @@ class PageGenerator extends Widget {
     }
 
     if (page.fillEmptySlots != null && page.fillEmptySlots) {
-      assert(page.placeholder != null,
+      assert(placeholder != null,
           'You have to provide a placeholder when using fillEmptySlots');
 
       var length = 27;
-      if (container == GuiContainer.inventory) length = 36;
-      if (container == GuiContainer.dropper) length = 9;
-      if (container == GuiContainer.hopper) length = 5;
+      if (fillMax != null) {
+        length = fillMax;
+      } else {
+        if (container == GuiContainer.inventory) length = 36;
+        if (container == GuiContainer.dropper) length = 9;
+        if (container == GuiContainer.hopper) length = 5;
+      }
 
       for (var i = 1; i <= length; i++) {
         if (!usedSlots.contains(i)) {
           final slot = _getSlotForContainer(container, i);
           ret.add(
-            Interactive(_createGuiItem(page.placeholder, slot), slot: slot),
+            Interactive(_createGuiItem(placeholder, slot), slot: slot),
           );
         }
       }
@@ -169,54 +187,68 @@ class PageGenerator extends Widget {
         },
       );
 
-      return If(
-          Condition.not(
-            Data.get(Location.here(), path: 'Items[$item]'),
-          ),
-          then: [
-            if (s.actions != null) ...s.actions,
-            If(Data.get(Location.here(), path: 'Items[{Slot:${s.slot.id}b}]'),
-                then: [
-                  Summon(
-                    Entities.item,
-                    tags: ['objd_gui_dropitem'],
+      Data checkItem;
+
+      switch (container) {
+        case GuiContainer.inventory:
+          {
+            checkItem = Data.get(Entity.Self(), path: 'Inventory[$item]');
+            break;
+          }
+        case GuiContainer.enderchest:
+          {
+            checkItem = Data.get(Entity.Self(), path: 'EnderItems[$item]');
+            break;
+          }
+        case GuiContainer.minecart:
+          {
+            checkItem = Data.get(Entity.Self(), path: 'Items[$item]');
+            break;
+          }
+
+        default:
+          checkItem = Data.get(Location.here(), path: 'Items[$item]');
+      }
+
+      return If(Condition.not(checkItem), then: [
+        if (s.actions != null) ...s.actions,
+        If(Data.get(Location.here(), path: 'Items[{Slot:${s.slot.id}b}]'),
+            then: [
+              Summon(
+                Entities.item,
+                tags: ['objd_gui_dropitem'],
+                nbt: {
+                  'Item': Item(
+                    Items.stone,
+                    count: 1,
                     nbt: {
-                      'Item': Item(
-                        Items.stone,
-                        count: 1,
-                        nbt: {
-                          'objd': {'gui': true},
-                        },
-                      ).getMap(),
+                      'objd': {'gui': true},
                     },
-                  ),
-                  Data.copy(
-                    Entity(type: Entities.item, limit: 1, nbt: {
-                      'Item': {
-                        'tag': {
-                          'objd': {'gui': true},
-                        },
-                      }
-                    }).sort(Sort.nearest),
-                    path: 'Item',
-                    from: Location.here(),
-                    fromPath: 'Items[{Slot:${s.slot.id}b}]',
-                  )
-                ]),
-          ]);
+                  ).getMap(),
+                },
+              ),
+              Data.copy(
+                Entity(type: Entities.item, limit: 1, nbt: {
+                  'Item': {
+                    'tag': {
+                      'objd': {'gui': true},
+                    },
+                  }
+                }).sort(Sort.nearest),
+                path: 'Item',
+                from: Location.here(),
+                fromPath: 'Items[{Slot:${s.slot.id}b}]',
+              )
+            ]),
+      ]);
     }).toList();
   }
 
   @override
   Widget generate(Context context) {
+    final page = Score(Entity.Player(distance: Range(to: 8)), pageScore);
     List<Widget> reset() {
       return [
-        Clear(
-          Entity.All(distance: Range(to: 20)),
-          Item('#${context.packId}:all', nbt: {
-            'objd': {'gui': true}
-          }),
-        ),
         Kill(
           Entity(
             type: Entities.item,
@@ -239,16 +271,64 @@ class PageGenerator extends Widget {
             distance: Range(to: 8),
           ),
         ),
+        Clear(
+          Entity.All(distance: Range(to: 20)),
+          Item('#${context.packId}:all', nbt: {
+            'objd': {'gui': true}
+          }),
+        ),
         File.execute(
           'gui/reset_gui${index}',
           child: For.of(setItems()),
         ),
+        If(Condition.not(page & index), then: [
+          File.execute(
+            'gui/clear$index',
+            child: For.of(clear()),
+          ),
+        ])
       ];
     }
 
     final s = Score(Entity.Player(distance: Range(to: 8)), countScore);
+
+    Data getItemCount;
+    bool isPlayer = false;
+
+    switch (container) {
+      case GuiContainer.inventory:
+        {
+          isPlayer = true;
+          getItemCount =
+              Data.get(Entity.Self(), path: 'Inventory[].tag.objd.gui');
+          break;
+        }
+      case GuiContainer.enderchest:
+        {
+          isPlayer = true;
+          getItemCount =
+              Data.get(Entity.Self(), path: 'EnderItems[].tag.objd.gui');
+          break;
+        }
+      case GuiContainer.minecart:
+        {
+          getItemCount = Data.get(Entity.Self(), path: 'Items[].tag.objd.gui');
+          break;
+        }
+
+      default:
+        getItemCount = Data.get(Location.here(), path: 'Items[].tag.objd.gui');
+    }
+
     var children = <Widget>[
-      //s.setToCondition(cond)
+      s,
+      s.setToCondition(Condition.data(getItemCount)),
+      If(s & 0, then: [
+        File.execute(
+          'gui/reset_gui${index}',
+          create: false,
+        ),
+      ]),
       If(Condition.not(s & _slots.length), then: [
         File.execute(
           'gui/actions${index}',
@@ -261,6 +341,11 @@ class PageGenerator extends Widget {
       if (slot.countScore != null) {
         children.add(If(slot.countScore > 0, then: [
           Builder((c) {
+            if (isPlayer) {
+              print(
+                'WARNING! Currently you can\'t modify the data of a player. The count of the slot ${slot.slot.slot} cannot be modified!',
+              );
+            }
             if (container == GuiContainer.inventory) {
               return Data.fromScore(
                 Entity.Self(),

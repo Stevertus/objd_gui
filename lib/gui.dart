@@ -24,6 +24,7 @@ class GuiModule extends Module {
   Item placeholder;
   String countScore;
   String pageScore;
+  int fillMax;
 
   GuiModule._(
     this.container,
@@ -32,8 +33,9 @@ class GuiModule extends Module {
     this.pages,
     this.placeholder,
     this.countScore,
-    this.pageScore,
-  ) : assert(pages != null && pages.isNotEmpty);
+    this.pageScore, {
+    this.fillMax,
+  }) : assert(pages != null && pages.isNotEmpty);
 
   factory GuiModule.chest(
     Location target, {
@@ -90,6 +92,7 @@ class GuiModule extends Module {
     Item placeholder,
     String countScore = _DEF_Count,
     String pageScore = _DEF_Page,
+    bool fillHotbar = false,
   }) =>
       GuiModule._(
         GuiContainer.inventory,
@@ -99,6 +102,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        fillMax: fillHotbar ? null : 27,
       );
 
   factory GuiModule.enderchest(
@@ -144,12 +148,15 @@ class GuiModule extends Module {
             p,
             container,
             countScore,
+            fillMax,
             pageScore,
+            placeholder,
             pages.indexOf(p) + 1,
+            pages.length,
           ),
         )
         .toList();
-    final main = File(
+    final main = File.execute(
       'gui/main',
       child: Builder(
         (context) {
@@ -159,12 +166,14 @@ class GuiModule extends Module {
             Entity.Player(distance: Range(to: 8)),
             pageScore,
           );
-          return For.of(
-            _pageGens
+          return For.of([
+            If(Condition.not(score > 0), then: [score >> 1]),
+            ..._pageGens
                 .map(
                   (p) => If(
                     score & p.index,
                     then: [
+                      score,
                       File.execute(
                         'gui/gui${p.index}',
                         child: p,
@@ -173,7 +182,7 @@ class GuiModule extends Module {
                   ),
                 )
                 .toList(),
-          );
+          ]);
         },
       ),
     );
@@ -204,7 +213,9 @@ class GuiModule extends Module {
                     .map(
                       (p) => If(
                         score & p.index,
-                        then: p.clear(),
+                        then: [
+                          File.execute('/gui/clear${p.index}', create: false)
+                        ],
                       ),
                     )
                     .toList(),
