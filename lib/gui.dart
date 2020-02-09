@@ -25,6 +25,10 @@ class GuiModule extends Module {
   String countScore;
   String pageScore;
   int fillMax;
+  Item triggerGui;
+  Location offset;
+  bool minecartAlwaysActive;
+  TextComponent minecartName;
 
   GuiModule._(
     this.container,
@@ -35,6 +39,10 @@ class GuiModule extends Module {
     this.countScore,
     this.pageScore, {
     this.fillMax,
+    this.triggerGui,
+    this.offset,
+    this.minecartAlwaysActive,
+    this.minecartName,
   }) : assert(pages != null && pages.isNotEmpty);
 
   factory GuiModule.chest(
@@ -137,11 +145,34 @@ class GuiModule extends Module {
         countScore,
         pageScore,
       );
+  factory GuiModule.item(
+    Item handItem, {
+    @required List<GuiPage> pages,
+    Item placeholder,
+    String countScore = _DEF_Count,
+    String pageScore = _DEF_Page,
+    Location offset,
+    bool alwaysActive = true,
+    TextComponent name,
+  }) =>
+      GuiModule._(
+        GuiContainer.minecart,
+        null,
+        null,
+        pages,
+        placeholder,
+        countScore,
+        pageScore,
+        triggerGui: handItem,
+        offset: offset ??
+            (alwaysActive ? Location.local(z: 3) : Location.rel(y: -0.69)),
+        minecartAlwaysActive: alwaysActive,
+        minecartName: name,
+      );
 
   List<PageGenerator> _pageGens;
 
-  @override
-  Widget generate(Context context) {
+  Widget _mainContent(Entity targetE) {
     _pageGens = pages
         .map(
           (p) => PageGenerator(
@@ -163,7 +194,7 @@ class GuiModule extends Module {
           if (_pageGens.length == 1) return _pageGens.first;
 
           final score = Score(
-            Entity.Player(distance: Range(to: 8)),
+            Entity.Player(distance: Range.to(8)),
             pageScore,
           );
           return For.of([
@@ -189,11 +220,93 @@ class GuiModule extends Module {
     if (blockLocation != null) {
       return Execute.positioned(blockLocation, children: [main, TagAll()]);
     }
-    if (targetEntity != null) {
-      return Execute.asat(targetEntity, children: [main, TagAll()]);
+    if (targetE != null) {
+      return Execute.asat(targetE, children: [main, TagAll()]);
     }
 
     throw ('Please provide a non-null argument in the GuiModule');
+  }
+
+  @override
+  Widget generate(Context context) {
+    var target = targetEntity;
+    final main = <Widget>[];
+
+    if (triggerGui != null) {
+      target ??=
+          Entity(type: Entities.chest_minecart, tags: ['objd_gui_container']);
+      main.addAll([
+        Execute.as(
+          Entity.All(
+            nbt: {'SelectedItem': triggerGui.getMap()},
+            verticalRotation: minecartAlwaysActive ? null : Range.from(80),
+          ),
+          children: [
+            Tag('objd_has_gui_item'),
+          ],
+        ),
+        Execute.asat(
+          target,
+          children: [
+            If(
+                Condition.not(
+                  Entity(tags: ['objd_has_gui_item'], distance: Range.to(8)),
+                ),
+                then: [
+                  File.execute(
+                    'gui/removecart',
+                    child: For.of([
+                      Teleport(Entity.Self(), to: Location('~ -500 ~')),
+                      Data.merge(Entity.Self(), nbt: {'Items': []}),
+                      Kill(),
+                    ]),
+                  )
+                ]),
+          ],
+        ),
+        Execute.as(
+          Entity(tags: ['objd_had_gui_item']).not(tags: ['objd_has_gui_item']),
+          children: [
+            Tag('objd_had_gui_item').remove(),
+          ],
+        ),
+        Execute.asat(
+          Entity.All(tags: ['objd_has_gui_item'])
+              .not(tags: ['objd_had_gui_item']),
+          children: [
+            File.execute(
+              'gui/summoncart',
+              child: Summon(
+                Entities.chest_minecart,
+                location: offset,
+                name: minecartName,
+                tags: ['objd_gui_container'],
+                nbt: {
+                  'CustomDisplayTile': 1,
+                  'DisplayState': {'Name': 'air'},
+                  'DisplayOffset': 1
+                },
+              ),
+            ),
+          ],
+        ).anchored(Facing.eyes),
+        Execute.asat(
+          Entity.All(tags: ['objd_has_gui_item']),
+          children: [
+            Teleport(
+              target.copyWith(distance: Range.to(8)).sort(Sort.nearest),
+              to: offset,
+            ),
+            Tag('objd_had_gui_item'),
+            Tag('objd_has_gui_item').remove(),
+          ],
+        ).anchored(Facing.eyes),
+      ]);
+    }
+
+    main.add(_mainContent(target));
+
+    return For.of(main);
   }
 
   @override
@@ -205,7 +318,7 @@ class GuiModule extends Module {
               if (_pageGens.length == 1) return For.of(_pageGens.first.clear());
 
               final score = Score(
-                Entity.Player(distance: Range(to: 8)),
+                Entity.Player(distance: Range.to(8)),
                 pageScore,
               );
               return For.of(

@@ -78,7 +78,7 @@ class PageGenerator extends Widget {
         newSlot = Interactive(item);
       }
       if (slot is ChangePage) {
-        final s = Score(Entity.Player(distance: Range(to: 8)), pageScore);
+        final s = Score(Entity.Player(distance: Range.to(8)), pageScore);
 
         final actions = <Widget>[];
 
@@ -188,31 +188,41 @@ class PageGenerator extends Widget {
       );
 
       Data checkItem;
+      var copyFrom;
+      var copyFromPath = 'Items';
 
       switch (container) {
         case GuiContainer.inventory:
           {
             checkItem = Data.get(Entity.Self(), path: 'Inventory[$item]');
+            copyFrom = Entity.Self();
+            copyFromPath = 'Inventory';
             break;
           }
         case GuiContainer.enderchest:
           {
             checkItem = Data.get(Entity.Self(), path: 'EnderItems[$item]');
+            copyFrom = Entity.Self();
+            copyFromPath = 'EnderItems';
             break;
           }
         case GuiContainer.minecart:
           {
             checkItem = Data.get(Entity.Self(), path: 'Items[$item]');
+            copyFrom = Entity.Self();
             break;
           }
 
         default:
-          checkItem = Data.get(Location.here(), path: 'Items[$item]');
+          {
+            checkItem = Data.get(Location.here(), path: 'Items[$item]');
+            copyFrom = Location.here();
+          }
       }
 
       return If(Condition.not(checkItem), then: [
         if (s.actions != null) ...s.actions,
-        If(Data.get(Location.here(), path: 'Items[{Slot:${s.slot.id}b}]'),
+        If(Data.get(copyFrom, path: '$copyFromPath[{Slot:${s.slot.id}b}]'),
             then: [
               Summon(
                 Entities.item,
@@ -236,8 +246,8 @@ class PageGenerator extends Widget {
                   }
                 }).sort(Sort.nearest),
                 path: 'Item',
-                from: Location.here(),
-                fromPath: 'Items[{Slot:${s.slot.id}b}]',
+                from: copyFrom,
+                fromPath: '$copyFromPath[{Slot:${s.slot.id}b}]',
               )
             ]),
       ]);
@@ -246,7 +256,7 @@ class PageGenerator extends Widget {
 
   @override
   Widget generate(Context context) {
-    final page = Score(Entity.Player(distance: Range(to: 8)), pageScore);
+    final page = Score(Entity.Player(distance: Range.to(8)), pageScore);
     List<Widget> reset() {
       return [
         Kill(
@@ -268,11 +278,11 @@ class PageGenerator extends Widget {
             tags: ['objd_gui_dropitem'],
           ),
           to: Entity.Player(
-            distance: Range(to: 8),
+            distance: Range.to(8),
           ),
         ),
         Clear(
-          Entity.All(distance: Range(to: 20)),
+          Entity.All(distance: Range.to(20)),
           Item('#${context.packId}:all', nbt: {
             'objd': {'gui': true}
           }),
@@ -290,10 +300,10 @@ class PageGenerator extends Widget {
       ];
     }
 
-    final s = Score(Entity.Player(distance: Range(to: 8)), countScore);
+    final s = Score(Entity.Player(distance: Range.to(8)), countScore);
 
     Data getItemCount;
-    bool isPlayer = false;
+    var isPlayer = false;
 
     switch (container) {
       case GuiContainer.inventory:
@@ -413,7 +423,7 @@ Slot _getSlotForContainer(GuiContainer container, int s) {
         return Slot.chest(s);
       }
     case GuiContainer.enderchest:
-      return Slot.chest(s, null); //, true);
+      return Slot.chest(s, null, true);
   }
   throw (UnsupportedError('$container is not supported'));
 }
