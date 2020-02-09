@@ -10,52 +10,46 @@ void main(List<String> args) {
         main: File('main'),
         load: File('load'),
         modules: [
-          GuiModule.item(
-            Item(Items.chest_minecart),
-            name: TextComponent('Custom GUI'),
-            alwaysActive: false,
+          GuiModule.chest(
+            Location('-49 56 -36'),
+            // Item(Items.chest_minecart),
+            // name: TextComponent('Custom GUI'),
+            // alwaysActive: false,
             placeholder: Item(
               Items.gray_stained_glass_pane,
               name: TextComponent(''),
             ),
+            globalSlots: [
+              ChangePage.prev(Item(Items.arrow)),
+              Interactive(Item(Items.apple), actions: [
+                Log('click'),
+              ]),
+              ChangePage.next(
+                Item(Items.arrow),
+              ),
+            ],
             pages: [
               GuiPage(
                 [
-                  EmptySlot(slot: Slot.drop(3, 2)),
-                  ChangePage.prev(
-                    Item(Items.arrow),
-                  ),
-                  Interactive(Item(Items.apple), actions: [
-                    Log('click'),
-                  ]),
-                  ChangePage.next(
-                    Item(Items.arrow),
-                  ),
+                  EmptySlot(slot: Slot.chest(3, 2)),
                 ],
                 fillEmptySlots: true,
               ),
               GuiPage(
                 [
-                  EmptySlot(slot: Slot.drop(3, 2)),
-                  ChangePage.prev(
-                    Item(Items.arrow),
-                  ),
+                  EmptySlot(slot: Slot.chest(3, 8)),
                   Interactive(
                     Item(Items.apple),
+                    slot: Slot.chest(2, 5),
                     actions: [
-                      Log('click pg2'),
+                      Log('pg2'),
                     ],
-                    countScore: Score(Entity.Player(), 'objd_gui_count'),
-                  ),
-                  ChangePage.next(
-                    Item(Items.arrow),
-                  ),
-                  Interactive(Item(Items.apple), slot: Slot.chest(2, 5))
+                  )
                 ],
                 fillEmptySlots: true,
               ),
             ],
-          )
+          ),
         ],
       ),
     ),

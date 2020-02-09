@@ -2,6 +2,7 @@ library objd_gui;
 
 import 'package:meta/meta.dart';
 import 'package:objd/core.dart';
+import 'package:objd_gui/data/gui_slot.dart';
 import 'package:objd_gui/data/page.dart';
 import 'package:objd_gui/widgets/all_tag.dart';
 import 'package:objd_gui/widgets/page_gen.dart';
@@ -21,6 +22,7 @@ class GuiModule extends Module {
   Location blockLocation;
   Entity targetEntity;
   List<GuiPage> pages;
+  List<GuiSlot> globalSlots;
   Item placeholder;
   String countScore;
   String pageScore;
@@ -37,7 +39,8 @@ class GuiModule extends Module {
     this.pages,
     this.placeholder,
     this.countScore,
-    this.pageScore, {
+    this.pageScore,
+    this.globalSlots, {
     this.fillMax,
     this.triggerGui,
     this.offset,
@@ -51,6 +54,7 @@ class GuiModule extends Module {
     Item placeholder,
     String countScore = _DEF_Count,
     String pageScore = _DEF_Page,
+    List<GuiSlot> globalSlots,
   }) =>
       GuiModule._(
         GuiContainer.chest,
@@ -60,6 +64,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        globalSlots,
       );
 
   factory GuiModule.dropper(
@@ -68,6 +73,7 @@ class GuiModule extends Module {
     Item placeholder,
     String countScore = _DEF_Count,
     String pageScore = _DEF_Page,
+    List<GuiSlot> globalSlots,
   }) =>
       GuiModule._(
         GuiContainer.dropper,
@@ -77,6 +83,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        globalSlots,
       );
   factory GuiModule.hopper(
     Location target, {
@@ -84,6 +91,7 @@ class GuiModule extends Module {
     Item placeholder,
     String countScore = _DEF_Count,
     String pageScore = _DEF_Page,
+    List<GuiSlot> globalSlots,
   }) =>
       GuiModule._(
         GuiContainer.hopper,
@@ -93,6 +101,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        globalSlots,
       );
   factory GuiModule.inventory(
     Entity target, {
@@ -101,6 +110,7 @@ class GuiModule extends Module {
     String countScore = _DEF_Count,
     String pageScore = _DEF_Page,
     bool fillHotbar = false,
+    List<GuiSlot> globalSlots,
   }) =>
       GuiModule._(
         GuiContainer.inventory,
@@ -110,6 +120,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        globalSlots,
         fillMax: fillHotbar ? null : 27,
       );
 
@@ -119,6 +130,7 @@ class GuiModule extends Module {
     Item placeholder,
     String countScore = _DEF_Count,
     String pageScore = _DEF_Page,
+    List<GuiSlot> globalSlots,
   }) =>
       GuiModule._(
         GuiContainer.enderchest,
@@ -128,6 +140,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        globalSlots,
       );
   factory GuiModule.minecart(
     Entity target, {
@@ -135,6 +148,7 @@ class GuiModule extends Module {
     Item placeholder,
     String countScore = _DEF_Count,
     String pageScore = _DEF_Page,
+    List<GuiSlot> globalSlots,
   }) =>
       GuiModule._(
         GuiContainer.minecart,
@@ -144,6 +158,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        globalSlots,
       );
   factory GuiModule.item(
     Item handItem, {
@@ -154,6 +169,7 @@ class GuiModule extends Module {
     Location offset,
     bool alwaysActive = true,
     TextComponent name,
+    List<GuiSlot> globalSlots,
   }) =>
       GuiModule._(
         GuiContainer.minecart,
@@ -163,6 +179,7 @@ class GuiModule extends Module {
         placeholder,
         countScore,
         pageScore,
+        globalSlots,
         triggerGui: handItem,
         offset: offset ??
             (alwaysActive ? Location.local(z: 3) : Location.rel(y: -0.69)),
@@ -181,6 +198,7 @@ class GuiModule extends Module {
             countScore,
             fillMax,
             pageScore,
+            globalSlots,
             placeholder,
             pages.indexOf(p) + 1,
             pages.length,

@@ -13,6 +13,7 @@ class PageGenerator extends Widget {
   GuiPage page;
   GuiContainer container;
   List<Interactive> _slots;
+  List<GuiSlot> globalSlots;
   String countScore;
   String pageScore;
   Item placeholder;
@@ -23,6 +24,7 @@ class PageGenerator extends Widget {
     this.countScore,
     this.fillMax,
     this.pageScore,
+    this.globalSlots,
     Item placeholder, [
     this.index,
     this.totalPages,
@@ -35,6 +37,8 @@ class PageGenerator extends Widget {
     final ret = <Interactive>[];
     final slots = page.slots;
 
+    if (globalSlots != null) slots.addAll(globalSlots);
+
     final usedSlots = <int>[];
 
     // get all the ids that are already occupied
@@ -44,7 +48,7 @@ class PageGenerator extends Widget {
       }
     }
 
-    var slotCounter = 1;
+    var slotCounter = 0;
 
     for (var slot in slots) {
       Slot currentSlot;
@@ -58,7 +62,7 @@ class PageGenerator extends Widget {
           slotCounter++;
         }
 
-        currentSlot = _getSlotForContainer(container, slotCounter);
+        currentSlot = _getSlotForContainer(container, slotCounter + 1);
 
         usedSlots.add(slotCounter);
 
@@ -128,7 +132,7 @@ class PageGenerator extends Widget {
 
       for (var i = 1; i <= length; i++) {
         if (!usedSlots.contains(i)) {
-          final slot = _getSlotForContainer(container, i);
+          final slot = _getSlotForContainer(container, i + 1);
           ret.add(
             Interactive(_createGuiItem(placeholder, slot), slot: slot),
           );
