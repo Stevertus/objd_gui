@@ -130,7 +130,7 @@ class PageGenerator extends Widget {
         if (container == GuiContainer.hopper) length = 5;
       }
 
-      for (var i = 1; i <= length; i++) {
+      for (var i = 0; i <= length; i++) {
         if (!usedSlots.contains(i)) {
           final slot = _getSlotForContainer(container, i + 1);
           ret.add(
