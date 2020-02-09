@@ -213,6 +213,18 @@ class GuiModule extends Module {
                   ),
                 )
                 .toList(),
+            if (blockLocation != null || container == GuiContainer.minecart)
+              If(
+                Condition.block(Location.rel(y: -1), block: Blocks.hopper),
+                then: [
+                  Data.merge(
+                    Location.rel(y: -1),
+                    nbt: {
+                      'TransferCooldown': 20,
+                    },
+                  )
+                ],
+              )
           ]);
         },
       ),
