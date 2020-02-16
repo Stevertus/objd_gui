@@ -3,11 +3,13 @@ import 'package:objd/basic/types/slot.dart';
 
 import 'gui_slot.dart';
 
+/// Like the name states, this is a simple way to change the current page. As usual you define an item and slot and additionally the index of the page you want to navigate to(starting with 1).
 class ChangePage extends GuiSlot {
   final ChangePageMode mode;
   final int page;
   final Item item;
 
+  /// Like the name states, this is a simple way to change the current page. As usual you define an item and slot and additionally the index of the page you want to navigate to(starting with 1).
   ChangePage(
     this.page,
     this.item, {

@@ -17,6 +17,10 @@ export 'package:objd_gui/data/gui_slot.dart';
 const _DEF_Count = 'objd_gui_count';
 const _DEF_Page = 'objd_gui_page';
 
+/// You can use this in your `modules` list in a pack or include it as usual widget somewhere in case you want to run it conditionally.
+///
+/// For each container type and size there is one constructor: GuiModule.chest, GuiModule.dropper, GuiModule.hopper, GuiModule.enderchest,   GuiModule.inventory, GuiModule.minecart and GuiModule.item.
+
 class GuiModule extends Module {
   GuiContainer container;
   Location blockLocation;
@@ -46,7 +50,7 @@ class GuiModule extends Module {
     this.offset,
     this.minecartAlwaysActive,
     this.minecartName,
-  }) : assert(pages != null && pages.isNotEmpty);
+  });
 
   factory GuiModule.chest(
     Location target, {
@@ -160,6 +164,20 @@ class GuiModule extends Module {
         pageScore,
         globalSlots,
       );
+
+  /// objd_gui also includes the feature to show and hide the gui(as a minecart) if the player holds a specific item in their hand. So this acts kind of like a game menu or portable menu. Therefore a few additional arguments can be specified.
+  ///
+  /// ```dart
+  /// GuiModule.item(
+  /// 	Item(Items.stone),
+  /// 	alwaysActive: false,
+  /// 	name: TextComponent('my awesome gui'),
+  /// )
+  /// ```
+  ///
+  /// The Item is obviously the item that you want to detect, you can also provide nbt or custommodels here.
+  /// With the alwaysActive option you can toggle whether the Gui should appear always in front of the player or just in the floor when you look straight down (you can also provide a custom location with `offset`).
+  /// And you can give the corresponding Minecart a custom name that will be displayed in the gui.
   factory GuiModule.item(
     Item handItem, {
     @required List<GuiPage> pages,
@@ -181,8 +199,7 @@ class GuiModule extends Module {
         pageScore,
         globalSlots,
         triggerGui: handItem,
-        offset: offset ??
-            (alwaysActive ? Location.local(z: 3) : Location.rel(y: -0.69)),
+        offset: offset,
         minecartAlwaysActive: alwaysActive,
         minecartName: name,
       );
@@ -209,28 +226,29 @@ class GuiModule extends Module {
       'gui/main',
       child: Builder(
         (context) {
-          if (_pageGens.length == 1) return _pageGens.first;
-
           final score = Score(
             Entity.Player(distance: Range.to(8)),
             pageScore,
           );
           return For.of([
-            If(Condition.not(score > 0), then: [score >> 1]),
-            ..._pageGens
-                .map(
-                  (p) => If(
-                    score & p.index,
-                    then: [
-                      score,
-                      File.execute(
-                        'gui/gui${p.index}',
-                        child: p,
-                      )
-                    ],
-                  ),
-                )
-                .toList(),
+            if (_pageGens.length == 1) _pageGens.first,
+            if (_pageGens.length > 1)
+              If(Condition.not(score > 0), then: [score >> 1]),
+            if (_pageGens.length > 1)
+              ..._pageGens
+                  .map(
+                    (p) => If(
+                      score & p.index,
+                      then: [
+                        score,
+                        File.execute(
+                          'gui/gui${p.index}',
+                          child: p,
+                        )
+                      ],
+                    ),
+                  )
+                  .toList(),
             if (blockLocation != null || container == GuiContainer.minecart)
               If(
                 Condition.block(Location.rel(y: -1), block: Blocks.hopper),
@@ -259,12 +277,19 @@ class GuiModule extends Module {
 
   @override
   Widget generate(Context context) {
+    assert(pages != null && pages.isNotEmpty);
+
     var target = targetEntity;
+
+    var dOffset = offset;
     final main = <Widget>[];
 
     if (triggerGui != null) {
       target ??=
           Entity(type: Entities.chest_minecart, tags: ['objd_gui_container']);
+      dOffset ??= (minecartAlwaysActive
+          ? Location.local(z: 3)
+          : Location.rel(y: -0.69));
       main.addAll([
         Execute.as(
           Entity.All(
@@ -308,7 +333,7 @@ class GuiModule extends Module {
               'gui/summoncart',
               child: Summon(
                 Entities.chest_minecart,
-                location: offset,
+                location: dOffset,
                 name: minecartName,
                 tags: ['objd_gui_container'],
                 nbt: {
@@ -325,7 +350,7 @@ class GuiModule extends Module {
           children: [
             Teleport(
               target.copyWith(distance: Range.to(8)).sort(Sort.nearest),
-              to: offset,
+              to: dOffset,
             ),
             Tag('objd_had_gui_item'),
             Tag('objd_has_gui_item').remove(),

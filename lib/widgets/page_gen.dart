@@ -261,48 +261,46 @@ class PageGenerator extends Widget {
   @override
   Widget generate(Context context) {
     final page = Score(Entity.Player(distance: Range.to(8)), pageScore);
-    List<Widget> reset() {
-      return [
-        Kill(
-          Entity(
-            type: Entities.item,
-            nbt: {
-              'Item': {
-                'tag': {
-                  'objd': {'gui': true}
-                },
+    final reset = [
+      Kill(
+        Entity(
+          type: Entities.item,
+          nbt: {
+            'Item': {
+              'tag': {
+                'objd': {'gui': true}
               },
             },
-          ),
+          },
         ),
-        ...itemActions(),
-        Teleport.entity(
-          Entity(
-            type: Entities.item,
-            tags: ['objd_gui_dropitem'],
-          ),
-          to: Entity.Player(
-            distance: Range.to(8),
-          ),
+      ),
+      ...itemActions(),
+      Teleport.entity(
+        Entity(
+          type: Entities.item,
+          tags: ['objd_gui_dropitem'],
         ),
-        Clear(
-          Entity.All(distance: Range.to(20)),
-          Item('#${context.packId}:all', nbt: {
-            'objd': {'gui': true}
-          }),
+        to: Entity.Player(
+          distance: Range.to(8),
         ),
+      ),
+      Clear(
+        Entity.All(distance: Range.to(20)),
+        Item('#${context.packId}:all', nbt: {
+          'objd': {'gui': true}
+        }),
+      ),
+      File.execute(
+        'gui/reset_gui${index}',
+        child: For.of(setItems()),
+      ),
+      If(Condition.not(page & index), then: [
         File.execute(
-          'gui/reset_gui${index}',
-          child: For.of(setItems()),
+          'gui/clear$index',
+          child: For.of(clear()),
         ),
-        If(Condition.not(page & index), then: [
-          File.execute(
-            'gui/clear$index',
-            child: For.of(clear()),
-          ),
-        ])
-      ];
-    }
+      ])
+    ];
 
     final s = Score(Entity.Player(distance: Range.to(8)), countScore);
 
@@ -346,7 +344,7 @@ class PageGenerator extends Widget {
       If(Condition.not(s & _slots.length), then: [
         File.execute(
           'gui/actions${index}',
-          child: For.of(reset()),
+          child: For.of(reset),
         ),
       ]),
     ];

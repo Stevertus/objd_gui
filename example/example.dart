@@ -7,49 +7,81 @@ void main(List<String> args) {
       name: 'gui_test',
       generate: Pack(
         name: 'gui',
-        main: File('main'),
-        load: File('load'),
-        modules: [
-          GuiModule.chest(
-            Location('-49 56 -36'),
-            // Item(Items.chest_minecart),
-            // name: TextComponent('Custom GUI'),
-            // alwaysActive: false,
-            placeholder: Item(
-              Items.gray_stained_glass_pane,
-              name: TextComponent(''),
+        load: File('load'), // important! to load scoreboards
+        main: File(
+          'main',
+          child: Execute.at(
+            Entity(
+              type: Entities.armor_stand,
+              tags: ['custom_gui_location'],
             ),
-            globalSlots: [
-              ChangePage.prev(Item(Items.arrow)),
-              Interactive(Item(Items.apple), actions: [
-                Log('click'),
-              ]),
-              ChangePage.next(
-                Item(Items.arrow),
-              ),
-            ],
-            pages: [
-              GuiPage(
-                [
-                  EmptySlot(slot: Slot.chest(3, 2)),
-                ],
-                fillEmptySlots: true,
-              ),
-              GuiPage(
-                [
-                  EmptySlot(slot: Slot.chest(3, 8)),
-                  Interactive(
-                    Item(Items.apple),
-                    slot: Slot.chest(2, 5),
-                    actions: [
-                      Log('pg2'),
+            children: [
+              GuiModule.chest(
+                Location.here(),
+                pages: [
+                  GuiPage(
+                    [
+                      Placeholder(
+                        slot: Slot.chest(2, 1),
+                        item: Item(
+                          Items.black_stained_glass_pane,
+                        ), // overwritten the lame gray one
+                      ),
+                      EmptySlot(
+                        slot: Slot.chest(2, 2),
+                      ),
+                      Interactive(
+                        Item(Items.stone),
+                        slot: Slot.chest(2, 5),
+                        actions: [
+                          Log('clicked stone'),
+                        ],
+                        countScore: Score(Entity.Player(), 'custom_score'),
+                      ),
+                      ChangePage(
+                        2,
+                        Item(Items.arrow),
+                        slot: Slot.chest(3, 9),
+                      ),
                     ],
-                  )
+                    fillEmptySlots: true,
+                    placeholder: Item(Items.gray_stained_glass_pane),
+                  ),
+                  GuiPage(
+                    [
+                      Interactive(
+                        Item(Items.apple),
+                        actions: [
+                          Log('MY Nice Apple'),
+                        ],
+                      ),
+                      EmptySlot(
+                        slot: Slot.chest(1, 2),
+                      ),
+                    ],
+                    fillEmptySlots: true,
+                  ),
                 ],
-                fillEmptySlots: true,
-              ),
+                placeholder: Item(Items.light_gray_stained_glass_pane),
+                globalSlots: [
+                  ChangePage.prev(
+                    Item(Items.arrow),
+                    slot: Slot.chest(3, 1),
+                  ),
+                  ChangePage.next(
+                    Item(Items.arrow),
+                    slot: Slot.chest(3, 9),
+                  ),
+                ],
+                countScore: 'my_count',
+                pageScore: 'my_page',
+              )
             ],
           ),
+        ),
+
+        modules: [
+          // or here
         ],
       ),
     ),
