@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   objd: 
-    path: C:\dev\Dart\objectiveD
+    git: git://github.com/Stevertus/objD.git
   meta:
 
 dev_dependencies:

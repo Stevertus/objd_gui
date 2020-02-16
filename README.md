@@ -142,7 +142,9 @@ GuiPage(
 ```
 
 It fills the Gui like that: 
+
 ![](https://prismic-io.s3.amazonaws.com/stevertuscom/8b15f8e9-f8ff-4030-b7b2-2cbf4ea49a67_2020-02-16_13.00.05.png)
+
 Notice how the EmptySlot, that has a fixed position, is skipped with filling the gui.
 
 ## Integrating the Gui into your datapack
