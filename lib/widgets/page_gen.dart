@@ -44,7 +44,11 @@ class PageGenerator extends Widget {
     // get all the ids that are already occupied
     for (var slot in slots) {
       if (slot.slot != null) {
-        usedSlots.add(slot.slot.id);
+        usedSlots.add(
+          container == GuiContainer.inventory
+              ? _toInvRow(slot.slot.id)
+              : slot.slot.id,
+        );
       }
     }
 
@@ -55,10 +59,7 @@ class PageGenerator extends Widget {
       GuiSlot newSlot;
 
       if (slot.slot == null) {
-        while (usedSlots.indexWhere((v) => container == GuiContainer.inventory
-                ? _toInvRow(v) == slotCounter
-                : v == slotCounter) >=
-            0) {
+        while (usedSlots.indexWhere((v) => v == slotCounter) >= 0) {
           slotCounter++;
         }
 
@@ -106,16 +107,26 @@ class PageGenerator extends Widget {
         newSlot = Interactive(slot.item, actions: actions);
       }
 
-      if (newSlot is Interactive) {
+      if (newSlot != null && newSlot is Interactive) {
         var s = newSlot;
-        ret.add(
-          s.applyWhenPossible(
-            item: _createGuiItem(s.item, currentSlot),
-            slot: currentSlot,
-          ),
+
+        final alreadyOccupied = ret.firstWhere(
+          (slot) => slot.slot.id == currentSlot.id,
+          orElse: () => null,
         );
+
+        if (alreadyOccupied == null) {
+          ret.add(
+            s.applyWhenPossible(
+              item: _createGuiItem(s.item, currentSlot),
+              slot: currentSlot,
+            ),
+          );
+        }
       }
     }
+
+    print(usedSlots);
 
     if (page.fillEmptySlots != null && page.fillEmptySlots) {
       assert(placeholder != null,
@@ -130,7 +141,7 @@ class PageGenerator extends Widget {
         if (container == GuiContainer.hopper) length = 5;
       }
 
-      for (var i = 0; i <= length; i++) {
+      for (var i = 0; i < length; i++) {
         if (!usedSlots.contains(i)) {
           final slot = _getSlotForContainer(container, i + 1);
           ret.add(

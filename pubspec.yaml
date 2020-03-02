@@ -1,14 +1,14 @@
 name: objd_gui
 description: This is an objD extension for a customizable gui
-version: 0.0.1
-homepage: https://www.stevertus.com/tools/gui
+version: 0.0.1-beta.1
+homepage: https://stevertus.com/tools/gui
 
 environment:
-  sdk: '>=2.3.0 <3.0.0'
+  sdk: ">=2.3.0 <3.0.0"
 
 dependencies:
-  objd: 
-    git: git://github.com/Stevertus/objD.git
+  objd:
+    path: C:\dev\Dart\objectiveD
   meta:
 
 dev_dependencies:
