@@ -2,6 +2,7 @@ import 'package:objd/core.dart';
 import 'package:objd_gui/data/change_page.dart';
 import 'package:objd_gui/data/gui_slot.dart';
 import 'package:objd_gui/data/interactive_slot.dart';
+import 'package:objd_gui/data/items.dart';
 import 'package:objd_gui/data/page.dart';
 import 'package:objd_gui/data/placeholder.dart';
 import 'package:objd_gui/gui.dart';
@@ -122,6 +123,8 @@ class PageGenerator extends Widget {
               slot: currentSlot,
             ),
           );
+
+          UsedItems.add(s.item.getId());
         }
       }
     }
@@ -131,6 +134,8 @@ class PageGenerator extends Widget {
     if (page.fillEmptySlots != null && page.fillEmptySlots) {
       assert(placeholder != null,
           'You have to provide a placeholder when using fillEmptySlots');
+
+      UsedItems.add(placeholder.getId());
 
       var length = 27;
       if (fillMax != null) {

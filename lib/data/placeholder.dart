@@ -1,6 +1,5 @@
 import 'package:objd/basic/types/item.dart';
 import 'package:objd/basic/types/slot.dart';
-import 'package:objd_gui/data/interactive_slot.dart';
 
 import 'gui_slot.dart';
 

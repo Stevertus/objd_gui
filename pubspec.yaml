@@ -1,6 +1,6 @@
 name: objd_gui
-description: This is an objD extension for a customizable gui
-version: 0.0.1
+description: An objD extension that allows you to easily build interactive GUIS
+version: 0.1.0
 homepage: https://stevertus.com/tools/gui
 
 environment:
