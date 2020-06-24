@@ -129,8 +129,6 @@ class PageGenerator extends Widget {
       }
     }
 
-    print(usedSlots);
-
     if (page.fillEmptySlots != null && page.fillEmptySlots) {
       assert(placeholder != null,
           'You have to provide a placeholder when using fillEmptySlots');
@@ -446,8 +444,9 @@ Slot _getSlotForContainer(GuiContainer container, int s) {
   throw (UnsupportedError('$container is not supported'));
 }
 
-Item _createGuiItem(Item i, Slot s) => Item.clone(i)
-  ..slot = s
-  ..tag.addAll({
-    'objd': {'gui': true}
-  });
+Item _createGuiItem(Item i, Slot s) => i.copyWith(
+      slot: s,
+      nbt: {
+        'objd': {'gui': true}
+      },
+    );

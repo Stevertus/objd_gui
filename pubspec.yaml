@@ -1,13 +1,16 @@
 name: objd_gui
 description: An objD extension that allows you to easily build interactive GUIS
-version: 0.1.0
+version: 0.1.1
 homepage: https://stevertus.com/tools/gui
+repository: https://github.com/Stevertus/objd_gui
+issue_tracker: https://github.com/Stevertus/objd_gui/issues
+documentation: https://stevertus.com/article/objd_gui
 
 environment:
   sdk: ">=2.3.0 <3.0.0"
 
 dependencies:
-  objd: ^0.3.3-beta.2
+  objd: 0.3.3-1
   meta: ^1.1.8
 
 dev_dependencies:

@@ -6,7 +6,6 @@ import 'package:objd_gui/data/items.dart';
 class TagAll extends Widget {
   @override
   Widget generate(Context context) {
-    print('gen');
     return RawFile(
       'tags/items/all.json',
       json.encode(
