@@ -11,7 +11,7 @@ Read how to use it [here](https://stevertus.com/article/guiguide)
 Installing the package is strait forward just add to your existing objD project, objd_gui as dependency in the pubspec.yaml file.
 
 ```yaml
-objd_gui: 0.0.1
+objd_gui: 0.1.2
 ```
 
 Then you can import it with

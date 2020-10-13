@@ -194,7 +194,41 @@ class PageGenerator extends Widget {
         .toList();
   }
 
-  List<If> itemActions() {
+  List<Widget> buildActionCommands(Interactive s,
+          {dynamic copyFrom, String copyFromPath}) =>
+      [
+        if (s.actions != null) ...s.actions,
+        If(Data.get(copyFrom, path: '$copyFromPath[{Slot:${s.slot.id}b}]'),
+            then: [
+              Summon(
+                Entities.item,
+                tags: ['objd_gui_dropitem'],
+                nbt: {
+                  'Item': Item(
+                    Items.stone,
+                    count: 1,
+                    nbt: {
+                      'objd': {'gui': true},
+                    },
+                  ).getMap(),
+                },
+              ),
+              Data.copy(
+                Entity(type: Entities.item, limit: 1, nbt: {
+                  'Item': {
+                    'tag': {
+                      'objd': {'gui': true},
+                    },
+                  }
+                }).sort(Sort.nearest),
+                path: 'Item',
+                from: copyFrom,
+                fromPath: '$copyFromPath[{Slot:${s.slot.id}b}]',
+              )
+            ])
+      ];
+
+  List<Widget> itemActions() {
     return _slots.map((s) {
       var item = gson.encode(
         {
@@ -238,37 +272,25 @@ class PageGenerator extends Widget {
           }
       }
 
-      return If(Condition.not(checkItem), then: [
-        if (s.actions != null) ...s.actions,
-        If(Data.get(copyFrom, path: '$copyFromPath[{Slot:${s.slot.id}b}]'),
-            then: [
-              Summon(
-                Entities.item,
-                tags: ['objd_gui_dropitem'],
-                nbt: {
-                  'Item': Item(
-                    Items.stone,
-                    count: 1,
-                    nbt: {
-                      'objd': {'gui': true},
-                    },
-                  ).getMap(),
-                },
-              ),
-              Data.copy(
-                Entity(type: Entities.item, limit: 1, nbt: {
-                  'Item': {
-                    'tag': {
-                      'objd': {'gui': true},
-                    },
-                  }
-                }).sort(Sort.nearest),
-                path: 'Item',
-                from: copyFrom,
-                fromPath: '$copyFromPath[{Slot:${s.slot.id}b}]',
-              )
-            ]),
-      ]);
+      // edge case if just one slot is occupied. Check for slot not needed
+      if (_slots.length == 1) {
+        return For.of(
+          buildActionCommands(
+            s,
+            copyFrom: copyFrom,
+            copyFromPath: copyFromPath,
+          ),
+        );
+      }
+
+      return If(
+        Condition.not(checkItem),
+        then: buildActionCommands(
+          s,
+          copyFrom: copyFrom,
+          copyFromPath: copyFromPath,
+        ),
+      );
     }).toList();
   }
 

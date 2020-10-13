@@ -1,3 +1,8 @@
+## 0.1.2
+
+- updated objd version
+- fixed issue that made single item GUIs unusable(whoever needs those)
+
 ## 0.1.1
 
 - updated for Minecraft 1.16 and objd 0.3.3-1
