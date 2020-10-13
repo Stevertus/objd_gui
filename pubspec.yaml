@@ -10,7 +10,7 @@ environment:
   sdk: ">=2.3.0 <3.0.0"
 
 dependencies:
-  objd: 0.3.4
+  objd: ^0.3.4
   meta: ^1.1.8
 
 dev_dependencies:
