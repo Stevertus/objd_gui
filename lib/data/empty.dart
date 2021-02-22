@@ -1,4 +1,4 @@
-import 'package:objd/basic/types/slot.dart';
+import 'package:objd/core.dart';
 
 import 'gui_slot.dart';
 

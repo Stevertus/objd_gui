@@ -5,6 +5,7 @@ void main(List<String> args) {
   createProject(
     Project(
       name: 'gui_test',
+      version: 17,
       generate: Pack(
         name: 'gui',
         load: File('load'), // important! to load scoreboards

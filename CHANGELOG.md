@@ -1,3 +1,8 @@
+## 0.1.3
+
+- updated objd to 0.3.6
+- added support for Minecraft 1.17, hopefully
+
 ## 0.1.2
 
 - updated objd version
